@@ -1,0 +1,42 @@
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Local data and generated output (synthetic batches can still be large).
+data/
+
+# Local credentials and machine-specific AWS configuration.
+.aws/
+**/.aws/**
+credentials
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Exported presentation and screenshots may contain account-specific console data.
+*.pdf
+prints p slide/
+
+# Local agent/editor configuration.
+.agents/
+.codex/
+.vscode/
+.idea/
+
+build/
+*.zip
+dist/
+*.egg-info/
