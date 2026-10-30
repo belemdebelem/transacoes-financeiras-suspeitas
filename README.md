@@ -8,6 +8,45 @@ A solução gera lotes fictícios de transações, valida os registros e aplica 
 
 O projeto demonstra um fluxo de dados em lote e, opcionalmente, uma arquitetura orientada a eventos na AWS: o envio de um arquivo JSON ao Amazon S3 pode acionar uma função AWS Lambda para processá-lo. Os dados são sintéticos; as regras são didáticas e não comprovam fraude nem substituem a análise de uma instituição financeira.
 
+## Contexto e justificativa
+
+Instituições financeiras operam sob regulação intensa e precisam conciliar agilidade comercial, prevenção a fraudes e conformidade. O volume de transações, a variedade de canais (APP, WEB, POS e ATM) e a velocidade das operações tornam inviável depender apenas de análises manuais ou de controles pontuais. Esse cenário exige uma arquitetura capaz de transformar exigências regulatórias em controles técnicos mensuráveis, rastreáveis e auditáveis.
+
+No Brasil, o monitoramento de transações dialoga diretamente com:
+
+- **Banco Central do Brasil (BCB):** exige políticas robustas de prevenção à lavagem de dinheiro e ao financiamento do terrorismo (PLD/FT) e monitoramento contínuo, sob risco de sanções administrativas.
+- **COAF/UIF:** demanda o reporte tempestivo de operações suspeitas, por meio da Comunicação de Operação Suspeita (COS), alimentando a inteligência nacional contra crimes financeiros.
+- **Lei nº 9.613/1998:** criminaliza a lavagem de dinheiro e reforça a necessidade de diligência estrita e guarda de registros.
+
+A justificativa deste projeto é demonstrar, de forma didática e reproduzível, como uma instituição pode estruturar esse controle de ponta a ponta: ingestão de transações, validação e deduplicação, aplicação de regras explicáveis, persistência consultável, geração de alertas e observabilidade. Em vez de propor um produto pronto, o repositório funciona como uma arquitetura de referência mínima para discutir decisões de engenharia, governança e conformidade.
+
+### Da exigência ao controle técnico
+
+A tabela abaixo conecta exigências típicas desse contexto às capacidades técnicas correspondentes e mostra o que já está demonstrado no projeto e o que faria sentido evoluir em um ambiente produtivo.
+
+| Exigência ou diretriz | O que o projeto já demonstra | Evolução sugerida para produção |
+|---|---|---|
+| Monitoramento contínuo e tempestivo (BCB) | Ingestão por evento no S3, processamento em Lambda, logs estruturados e métricas por lote | Streaming com Kinesis ou MSK, orquestração, SLA, reprocessamento e replay de eventos |
+| Reporte de operações suspeitas (COAF/UIF) | Score, nível de risco, motivos, alertas via SNS e resumo operacional do lote | Gestão de casos, workflow de aprovação, integração com sistemas de reporte e trilha de evidências |
+| Diligência e guarda de registros (Lei nº 9.613/1998) | Arquivos brutos e processados no S3, logs no CloudWatch e separação entre entrada e saída | Retenção e WORM, criptografia com KMS, lineage, catálogo de dados e legal hold |
+| Explicabilidade e revisão humana | Regras determinísticas, motivos associados ao alerta e classificação por faixas de score | Registry de regras e modelos, backtesting, calibração de limiares, revisão de quatro olhos e feedback loop |
+| Segregação de funções e mínimo privilégio | Scripts de IAM, role da Lambda e política restrita por recurso | SSO, CI/CD com aprovação, SCPs, acesso break-glass e infraestrutura como código auditável |
+| Privacidade, segurança e observabilidade | Dados sintéticos, bucket sem acesso público, criptografia SSE-S3 e alarmes no CloudWatch | Adequação à LGPD, tokenização, KMS/CMK, Macie, GuardDuty, SIEM/SOC e runbooks de incidente |
+
+### Ideias arquiteturais para evoluir a solução
+
+Os blocos abaixo não são requisitos para executar este projeto. São direções para uma instituição que queira transformar a demonstração em um serviço de monitoramento mais próximo de um ambiente regulado:
+
+- **Ingestão híbrida e em tempo real:** combinar lotes históricos com eventos de streaming, usar schema registry e chaves de idempotência, tratar eventos atrasados e permitir replay sem duplicidade.
+- **Governança e qualidade de dados:** definir contratos de dados, quarentena para registros inválidos, catálogo, lineage e métricas de completude, consistência e atualidade.
+- **Detecção em camadas:** evoluir das regras explicáveis para uma combinação de regras versionadas, features comportamentais e modelos estatísticos, mantendo explicabilidade, backtesting e calibração por segmento.
+- **Investigação e gestão de casos:** conectar alertas a uma fila de análise, com priorização por risco, histórico da conta, evidências, comentários e registro da decisão humana.
+- **Observabilidade e auditoria:** correlacionar logs, métricas e trilhas de auditoria, acompanhar eficácia das regras, falsos positivos, deriva de comportamento e tempo de resposta aos alertas.
+- **Segurança e privacidade:** aplicar minimização e tokenização de dados pessoais, criptografia gerenciada, controle de acesso por função, endpoints privados e monitoramento contínuo de configurações.
+- **Engenharia e operação:** adotar infraestrutura como código, pipelines com testes e aprovação, política como código, ambientes separados e resposta a incidentes documentada.
+
+Este projeto é intencionalmente pequeno para manter o fluxo compreensível. O detalhamento da implementação está em [`docs/architecture.md`](docs/architecture.md), as regras estão em [`docs/business_rules.md`](docs/business_rules.md) e o plano de acompanhamento está em [`docs/analysis_plan.md`](docs/analysis_plan.md). Como os dados são sintéticos e as regras são didáticas, qualquer uso real exige calibração com dados históricos, validação independente, avaliação jurídica e de compliance e governança compatível com as obrigações da instituição.
+
 ## O que este projeto demonstra
 
 - Geração, validação e análise de dados com Python.
